@@ -1,11 +1,19 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const mongose = require('mongoose');
+const mongoose = require('mongoose');
 const port = 3001;
 
+//config
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
 //connect to mongodb
-mongose.connect('mongodb+srv://doug:blah@cluster0.fn3us.mongodb.net/newitemsdb?retryWrites=true&w=majority')
+mongoose.connect('mongodb+srv://doug:blah@cluster0.fn3us.mongodb.net/newitemsDB?retryWrites=true&w=majority', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
 
 //data schema
 const itemSchema = {
@@ -24,6 +32,16 @@ app.get('/items', (req, res) => {
 });
 
 //create route
+app.post('/newitem', (req, res) => {
+    const newItem = new Item({
+        title: req.body.title,
+        description: req.body.description
+    });
+
+    newItem.save()
+        .then(item => console.log(item))
+        .catch(err => res.status(400).json('Error ' + err));
+})
 
 //delete route
 
