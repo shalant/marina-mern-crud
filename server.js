@@ -44,8 +44,37 @@ app.post('/newitem', (req, res) => {
 })
 
 //delete route
+app.delete('/delete/:id', (req, res) => {
+    const id = req.params.id;
+
+    Item.findByIdAndDelete({ _id: id }, (req, res, err) => {
+        if(!err) {
+            console.log('Item deleted');
+        } else {
+            console.log(err);
+        }
+    })
+}
+)
 
 //update route
+app.put('/put/:id', (req, res) => {
+    const updatedItem = {
+        title: req.body.title,
+        description: req.body.description
+    }
+
+    Item.findByIdAndUpdate(
+        { _id: req.params.id }, 
+        { $set: updatedItem }, 
+        (req, res, err) => {
+            if(!err) {
+                console.log('Item updated');
+            } else {
+                console.log(err);
+            }
+    });
+});
 
 app.listen(port, function () {
     console.log('express is running')

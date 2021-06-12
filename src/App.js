@@ -10,12 +10,26 @@ function App() {
   });
   const [items, setItems] = useState([{
     title: '',
-    description: ''
-  }])
+    description: '',
+    _id: ''
+  }]);
+  const [isPut, setIsPut] = useState(false);
+  const [updatedItem, setUpdatedItem] = useState({
+    title: '',
+    description: '',
+    id: ''
+  });
 
   useEffect(() => {
     fetch('/items')
-  })
+      .then(res => {
+        if(res.ok) {
+          return res.json();
+        }
+      })
+      .then(jsonRes => setItems(jsonRes))
+      .catch(err => console.log(err));
+  }, [items]);
 
   function handleChange(event) {
     const {name, value} = event.target;
@@ -25,7 +39,6 @@ function App() {
           [name]: value
       }
     });
-    console.log(item);
   }
 
   function addItem(event) {
@@ -43,24 +56,90 @@ function App() {
       title: '',
       description: ''
     })
+  }
 
+  function deleteItem(id) {
+    axios.delete('/delete/' + id);
+    alert('item deleted');
+    console.log(`Deleted item with id ${id}`);
+  }
+
+  function openUpdate(id) {
+    setIsPut(true);
+    setUpdatedItem(prevInput => {
+      return(
+        {
+            ...prevInput,
+            id: id
+        }
+      )
+    })
+  }
+
+  function updateItem(id) {
+    axios.put('/put/' + id, updatedItem);
+    alert('Item updated')
+    console.log(`item with id ${id} updated`);
+  }
+
+  function handleUpdate(event) {
+    const {name, value} = event.target;
+    setUpdatedItem(prevInput => {
+      return {
+          ...prevInput,
+          [name]: value
+      };
+    });
+    console.log(updatedItem);
   }
 
   return (
     <div className="App">
-      <input 
-        onChange={handleChange} 
-        name='title' 
-        value={item.title} 
-        placeholder='title'
-      ></input>
-      <input 
-        onChange={handleChange} 
-        name='description' 
-        value={item.description} 
-        placeholder='description'
-      ></input>
-      <button onClick={addItem}>ADD ITEM</button>
+      {!isPut ?
+      (
+        <div className='main'>
+          <input 
+            onChange={handleChange} 
+            name='title' 
+            value={item.title} 
+            placeholder='title'
+          ></input>
+          <input 
+            onChange={handleChange} 
+            name='description' 
+            value={item.description} 
+            placeholder='description'
+          ></input>
+          <button onClick={addItem}>ADD ITEM</button>
+        </div>
+      ) : (
+        <div className='main'>
+          <input 
+            onChange={handleUpdate} 
+            name='title' 
+            value={updatedItem.title} 
+            placeholder='title'
+          ></input>
+          <input 
+            onChange={handleUpdate} 
+            name='description' 
+            value={updatedItem.description} 
+            placeholder='description'
+          ></input>
+          {/* when we have inline functions with arguments, they must be anonymous */}
+          <button onClick={() => updateItem(updatedItem.id)}>UPDATE ITEM</button>
+        </div>  
+      )}
+      {items.map((item) => {
+        return(
+          <div key={item._id} style={{background: 'pink', width: "40%", margin: 'auto auto'}}>
+            <p>{item.title}</p>
+            <p>{item.description}</p>
+            <button onClick={() => deleteItem(item._id)}>DELETE</button>
+            <button onClick={() => openUpdate(item._id)}>UPDATE</button>
+          </div>
+        )
+      })}
     </div>
   );
 }
